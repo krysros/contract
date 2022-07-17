@@ -78,7 +78,7 @@ def check_exists_ask_overwrite(arg_value, overwrite):
     if os.path.exists(arg_value) and not overwrite:
         try:
             msg = (
-                "File %s already exists, would you like to overwrite the existing file? (y/n)"
+                "File %s already exists, would you like to overwrite the existing file? (y/n) "
                 % arg_value
             )
             if input(msg).lower() == "y":
