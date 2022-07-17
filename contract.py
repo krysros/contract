@@ -46,19 +46,6 @@ def make_arg_parser():
     return parser
 
 
-def get_args(parser):
-    try:
-        parsed_args = vars(parser.parse_args())
-        return parsed_args
-    # Argument errors raise a SystemExit with code 2. Normal usage of the
-    # --help or -h flag raises a SystemExit with code 0.
-    except SystemExit as e:
-        if e.code == 0:
-            raise SystemExit
-        else:
-            raise RuntimeError(f"Correct usage is:\n{parser.usage}")
-
-
 def is_argument_valid(arg_name, arg_value, overwrite):
     # Basic checks for the arguments
     if arg_name == TEMPLATE_ARG:
@@ -175,10 +162,10 @@ def make_jinja_environment():
 
 def main():
     parser = make_arg_parser()
+    parsed_args = vars(parser.parse_args())
     # Everything is in a try-except block that catches a RuntimeError that is
     # raised if any of the individual functions called cause an error
     # themselves, terminating the main function.
-    parsed_args = get_args(parser)
     try:
         validate_all_args(parsed_args)
         yaml_data = get_yaml_data(os.path.abspath(parsed_args[YAML_ARG]))
