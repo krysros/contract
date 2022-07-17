@@ -13,9 +13,7 @@ QUIET_ARG = "quiet"
 
 def make_arg_parser():
     parser = argparse.ArgumentParser(
-        usage="python -m docxtpl [-h] [-o] [-q] {} {} {}".format(
-            TEMPLATE_ARG, YAML_ARG, OUTPUT_ARG
-        ),
+        usage=f"python -m docxtpl [-h] [-o] [-q] {TEMPLATE_ARG} {YAML_ARG} {OUTPUT_ARG}",
         description="Make docx file from existing template docx and yaml data.",
     )
     parser.add_argument(
@@ -52,9 +50,7 @@ def get_args(parser):
         if e.code == 0:
             raise SystemExit
         else:
-            raise RuntimeError(
-                "Correct usage is:\n{parser.usage}".format(parser=parser)
-            )
+            raise RuntimeError(f"Correct usage is:\n{parser.usage}")
 
 
 def is_argument_valid(arg_name, arg_value, overwrite):
@@ -62,7 +58,9 @@ def is_argument_valid(arg_name, arg_value, overwrite):
     if arg_name == TEMPLATE_ARG:
         return os.path.isfile(arg_value) and arg_value.endswith(".docx")
     elif arg_name == YAML_ARG:
-        return os.path.isfile(arg_value) and (arg_value.endswith(".yml") or arg_value.endswith(".yaml"))
+        return os.path.isfile(arg_value) and (
+            arg_value.endswith(".yml") or arg_value.endswith(".yaml")
+        )
     elif arg_name == OUTPUT_ARG:
         return arg_value.endswith(".docx") and check_exists_ask_overwrite(
             arg_value, overwrite
@@ -77,17 +75,14 @@ def check_exists_ask_overwrite(arg_value, overwrite):
     # confirmed returns True, else raises OSError.
     if os.path.exists(arg_value) and not overwrite:
         try:
-            msg = (
-                "File %s already exists, would you like to overwrite the existing file? (y/n) "
-                % arg_value
-            )
+            msg = f"File {arg_value} already exists, would you like to overwrite the existing file? (y/n) "
             if input(msg).lower() == "y":
                 return True
             else:
                 raise OSError
         except OSError:
             raise RuntimeError(
-                "File %s already exists, please choose a different name." % arg_value
+                "File {arg_value} already exists, please choose a different name."
             )
     else:
         return True
@@ -101,11 +96,7 @@ def validate_all_args(parsed_args):
             if not is_argument_valid(arg_name, arg_value, overwrite):
                 raise AssertionError
     except AssertionError:
-        raise RuntimeError(
-            'The specified {arg_name} "{arg_value}" is not valid.'.format(
-                arg_name=arg_name, arg_value=arg_value
-            )
-        )
+        raise RuntimeError(f'The specified {arg_name} "{arg_value}" is not valid.')
 
 
 def get_yaml_data(yaml_path):
@@ -115,14 +106,12 @@ def get_yaml_data(yaml_path):
             yaml_data = yaml.load(document, Loader=yaml.CLoader)
             return yaml_data
         except yaml.YAMLError as e:
-            if hasattr(e, 'problem_mark'):
+            if hasattr(e, "problem_mark"):
                 mark = e.problem_mark
                 line = mark.line + 1
                 column = mark.column + 1
                 print(
-                    "There was an error on line {line}, column {column} while trying to parse file {yaml_path}".format(
-                        line=line, column=column, yaml_path=yaml_path
-                    )
+                    f"There was an error on line {line}, column {column} while trying to parse file {yaml_path}"
                 )
             raise RuntimeError("Failed to get yaml data.")
 
@@ -147,13 +136,9 @@ def save_file(doc, parsed_args):
         output_path = parsed_args[OUTPUT_ARG]
         doc.save(output_path)
         if not parsed_args[QUIET_ARG]:
-            print(
-                "Document successfully generated and saved at {output_path}".format(
-                    output_path=output_path
-                )
-            )
+            print(f"Document successfully generated and saved at {output_path}")
     except OSError as e:
-        print("{e.strerror}. Could not save file {e.filename}.".format(e=e))
+        print(f"{e.strerror}. Could not save file {e.filename}.")
         raise RuntimeError("Failed to save file.")
 
 
