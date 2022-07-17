@@ -88,7 +88,7 @@ def check_exists_ask_overwrite(arg_value, overwrite):
                 raise OSError
         except OSError:
             raise RuntimeError(
-                "File {arg_value} already exists, please choose a different name."
+                f"File {arg_value} already exists, please choose a different name."
             )
     else:
         return True
