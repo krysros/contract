@@ -1,11 +1,11 @@
 import argparse
-import json
+import yaml
 import os
 
 from docxtpl.template import DocxTemplate, TemplateError
 
 TEMPLATE_ARG = "template_path"
-JSON_ARG = "json_path"
+YAML_ARG = "yaml_path"
 OUTPUT_ARG = "output_filename"
 OVERWRITE_ARG = "overwrite"
 QUIET_ARG = "quiet"
@@ -14,15 +14,15 @@ QUIET_ARG = "quiet"
 def make_arg_parser():
     parser = argparse.ArgumentParser(
         usage="python -m docxtpl [-h] [-o] [-q] {} {} {}".format(
-            TEMPLATE_ARG, JSON_ARG, OUTPUT_ARG
+            TEMPLATE_ARG, YAML_ARG, OUTPUT_ARG
         ),
-        description="Make docx file from existing template docx and json data.",
+        description="Make docx file from existing template docx and yaml data.",
     )
     parser.add_argument(
         TEMPLATE_ARG, type=str, help="The path to the template docx file."
     )
     parser.add_argument(
-        JSON_ARG, type=str, help="The path to the json file with the data."
+        YAML_ARG, type=str, help="The path to the yaml file with the data."
     )
     parser.add_argument(
         OUTPUT_ARG, type=str, help="The filename to save the generated docx."
@@ -61,8 +61,8 @@ def is_argument_valid(arg_name, arg_value, overwrite):
     # Basic checks for the arguments
     if arg_name == TEMPLATE_ARG:
         return os.path.isfile(arg_value) and arg_value.endswith(".docx")
-    elif arg_name == JSON_ARG:
-        return os.path.isfile(arg_value) and arg_value.endswith(".json")
+    elif arg_name == YAML_ARG:
+        return os.path.isfile(arg_value) and (arg_value.endswith(".yml") or arg_value.endswith(".yaml"))
     elif arg_name == OUTPUT_ARG:
         return arg_value.endswith(".docx") and check_exists_ask_overwrite(
             arg_value, overwrite
@@ -108,18 +108,23 @@ def validate_all_args(parsed_args):
         )
 
 
-def get_json_data(json_path):
-    with open(json_path) as file:
+def get_yaml_data(yaml_path):
+    with open(yaml_path, encoding="utf-8") as file:
         try:
-            json_data = json.load(file)
-            return json_data
-        except json.JSONDecodeError as e:
-            print(
-                "There was an error on line {e.lineno}, column {e.colno} while trying to parse file {json_path}".format(
-                    e=e, json_path=json_path
+            document = file.read()
+            yaml_data = yaml.load(document, Loader=yaml.CLoader)
+            return yaml_data
+        except yaml.YAMLError as e:
+            if hasattr(e, 'problem_mark'):
+                mark = e.problem_mark
+                line = mark.line + 1
+                column = mark.column + 1
+                print(
+                    "There was an error on line {line}, column {column} while trying to parse file {yaml_path}".format(
+                        line=line, column=column, yaml_path=yaml_path
+                    )
                 )
-            )
-            raise RuntimeError("Failed to get json data.")
+            raise RuntimeError("Failed to get yaml data.")
 
 
 def make_docxtemplate(template_path):
@@ -129,9 +134,9 @@ def make_docxtemplate(template_path):
         raise RuntimeError("Could not create docx template.")
 
 
-def render_docx(doc, json_data):
+def render_docx(doc, yaml_data):
     try:
-        doc.render(json_data)
+        doc.render(yaml_data)
         return doc
     except TemplateError:
         raise RuntimeError("An error ocurred while trying to render the docx")
@@ -160,9 +165,9 @@ def main():
     parsed_args = get_args(parser)
     try:
         validate_all_args(parsed_args)
-        json_data = get_json_data(os.path.abspath(parsed_args[JSON_ARG]))
+        yaml_data = get_yaml_data(os.path.abspath(parsed_args[YAML_ARG]))
         doc = make_docxtemplate(os.path.abspath(parsed_args[TEMPLATE_ARG]))
-        doc = render_docx(doc, json_data)
+        doc = render_docx(doc, yaml_data)
         save_file(doc, parsed_args)
     except RuntimeError as e:
         print("Error: " + e.__str__())
