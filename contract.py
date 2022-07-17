@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 
-from .template import DocxTemplate, TemplateError
+from docxtpl.template import DocxTemplate, TemplateError
 
 TEMPLATE_ARG = 'template_path'
 JSON_ARG = 'json_path'
