@@ -20,7 +20,6 @@ QUIET_ARG = "quiet"
 
 def make_arg_parser():
     parser = argparse.ArgumentParser(
-        usage=f"python -m docxtpl [-h] [-o] [-q] {TEMPLATE_ARG} {YAML_ARG} {OUTPUT_ARG}",
         description="Make docx file from existing template docx and yaml data.",
     )
     parser.add_argument(
