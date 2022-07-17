@@ -3,6 +3,13 @@ import yaml
 import os
 
 from docxtpl.template import DocxTemplate, TemplateError
+from jinja2 import Environment
+from babel.numbers import format_currency
+from babel.dates import (
+    format_date,
+    format_datetime,
+)
+from slownie import slownie_zl100gr
 
 TEMPLATE_ARG = "template_path"
 YAML_ARG = "yaml_path"
@@ -123,9 +130,9 @@ def make_docxtemplate(template_path):
         raise RuntimeError("Could not create docx template.")
 
 
-def render_docx(doc, yaml_data):
+def render_docx(doc, yaml_data, jinja_env):
     try:
-        doc.render(yaml_data)
+        doc.render(yaml_data, jinja_env)
         return doc
     except TemplateError:
         raise RuntimeError("An error ocurred while trying to render the docx")
@@ -142,6 +149,31 @@ def save_file(doc, parsed_args):
         raise RuntimeError("Failed to save file.")
 
 
+def fmt_datetime(dt):
+    return format_datetime(dt, format="dd.MM.YYYY", locale="pl_PL")
+
+
+def fmt_date(d):
+    return format_date(d, format="long", locale="pl_PL")
+
+
+def fmt_currency(c):
+    return format_currency(c, "PLN", locale="pl_PL")
+
+
+def in_words(v):
+    return slownie_zl100gr(v)
+
+
+def make_jinja_environment():
+    environment = Environment()
+    environment.filters["fmt_datetime"] = fmt_datetime
+    environment.filters["fmt_date"] = fmt_date
+    environment.filters["fmt_currency"] = fmt_currency
+    environment.filters["in_words"] = in_words
+    return environment
+
+
 def main():
     parser = make_arg_parser()
     # Everything is in a try-except block that catches a RuntimeError that is
@@ -152,7 +184,8 @@ def main():
         validate_all_args(parsed_args)
         yaml_data = get_yaml_data(os.path.abspath(parsed_args[YAML_ARG]))
         doc = make_docxtemplate(os.path.abspath(parsed_args[TEMPLATE_ARG]))
-        doc = render_docx(doc, yaml_data)
+        jinja_env = make_jinja_environment()
+        doc = render_docx(doc, yaml_data, jinja_env)
         save_file(doc, parsed_args)
     except RuntimeError as e:
         print("Error: " + e.__str__())
