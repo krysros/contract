@@ -28,21 +28,15 @@ def slownie(amount):
 
 
 def begin(tasks):
-    dates = []
-    for task in tasks:
-        dates.append(task['begin'])
+    dates = [task['begin'] for task in tasks]
     return min(dates)
 
 
 def end(tasks):
-    dates = []
-    for task in tasks:
-        dates.append(task['end'])
+    dates = [task['end'] for task in tasks]
     return max(dates)
 
 
 def total(tasks):
-    total = 0
-    for task in tasks:
-        total += task['value']
-    return total
+    values = [task['value'] for task in tasks]
+    return sum(values)
