@@ -4,12 +4,7 @@ import os
 
 from docxtpl.template import DocxTemplate, TemplateError
 from jinja2 import Environment
-from babel.numbers import format_currency
-from babel.dates import (
-    format_date,
-    format_datetime,
-)
-from slownie import slownie_zl100gr
+import filters
 
 TEMPLATE_ARG = "template_path"
 YAML_ARG = "yaml_path"
@@ -135,28 +130,11 @@ def save_file(doc, parsed_args):
         raise RuntimeError("Failed to save file.")
 
 
-def fmt_datetime(dt):
-    return format_datetime(dt, format="dd.MM.YYYY", locale="pl_PL")
-
-
-def fmt_date(d):
-    return format_date(d, format="long", locale="pl_PL")
-
-
-def fmt_currency(c):
-    return format_currency(c, "PLN", locale="pl_PL")
-
-
-def in_words(v):
-    return slownie_zl100gr(v)
-
-
 def make_jinja_environment():
     environment = Environment()
-    environment.filters["fmt_datetime"] = fmt_datetime
-    environment.filters["fmt_date"] = fmt_date
-    environment.filters["fmt_currency"] = fmt_currency
-    environment.filters["in_words"] = in_words
+    for f in dir(filters):
+        if not f.startswith('__'):
+            environment.filters[f] = getattr(filters, f)
     return environment
 
 
