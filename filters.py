@@ -15,12 +15,16 @@ def fmt_date(d):
     return format_date(d, format="long", locale="pl_PL")
 
 
-def fmt_currency(c):
-    return format_currency(c, "PLN", locale="pl_PL")
+def fmt_currency(number):
+    return format_currency(number, "PLN", locale="pl_PL")
 
 
-def slownie(v):
-    return slownie_zl100gr(v)
+def delta(dt, days=30):
+    return dt + datetime.timedelta(days)
+
+
+def slownie(amount):
+    return slownie_zl100gr(amount)
 
 
 def begin(tasks):
@@ -37,16 +41,8 @@ def end(tasks):
     return max(dates)
 
 
-def final(tasks, delta=30):
-    return end(tasks) + datetime.timedelta(delta)
-
-
 def total(tasks):
     total = 0
     for task in tasks:
         total += task['value']
     return total
-
-
-def factor(tasks, c=0.05):
-    return c * total(tasks)
