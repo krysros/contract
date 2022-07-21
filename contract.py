@@ -152,7 +152,7 @@ def main():
         doc = render_docx(doc, yaml_data, jinja_env)
         save_file(doc, parsed_args)
     except RuntimeError as e:
-        print("Error: " + e.__str__())
+        print(f"Error: {e}")
         return
     finally:
         if not parsed_args[QUIET_ARG]:
