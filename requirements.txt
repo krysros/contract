@@ -2,3 +2,4 @@ PyYAML
 docxtpl
 babel
 slownie
+Pygments
